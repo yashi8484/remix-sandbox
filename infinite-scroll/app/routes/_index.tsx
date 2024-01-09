@@ -1,7 +1,8 @@
 import type { LoaderFunction, MetaFunction } from "@remix-run/node";
 import { Data, ItemsResponse, fetchItems } from "../api.server";
-import { useLoaderData } from "@remix-run/react";
-import { useState } from "react";
+import { useFetcher, useLoaderData } from "@remix-run/react";
+import { useEffect, useState } from "react";
+import { InfiniteScroller } from "~/components/InfiniteScroller";
 
 export const loader: LoaderFunction = async (remixContext) => {
   const url = new URL(remixContext.request.url);
@@ -23,13 +24,42 @@ export const meta: MetaFunction = () => {
 
 export default function Index() {
   const initialItems = useLoaderData<ItemsResponse>();
+  const fetcher = useFetcher<ItemsResponse>();
+
   const [items, setItems] = useState<Data[]>(initialItems.data);
 
+  useEffect(() => {
+    if (!fetcher.data || fetcher.state === "loading") {
+      return;
+    }
+
+    if (fetcher.data) {
+      const newItems = fetcher.data.data;
+      setItems((prevAssets) => [...prevAssets, ...newItems]);
+    }
+  }, [fetcher.data]);
+
   return (
-    <div className="items-container">
-      {items.map((item) => (
-        <img key={item.id} className="item" src={item.thumb} />
-      ))}
-    </div>
+    <InfiniteScroller
+      loadNext={() => {
+        const page = fetcher.data
+          ? fetcher.data.page + 1
+          : initialItems.page + 1;
+        const query = `?index&page=${page}`;
+        console.log(query);
+        fetcher.load(query);
+      }}
+      loading={fetcher.state === "loading"}
+    >
+      <div>
+        {/* Items Grid */}
+        <div className="items-container">
+          {items.map((item) => (
+            <img key={item.id} className="item" src={item.thumb} />
+          ))}
+        </div>
+        {/* Loader(省略) */}
+      </div>
+    </InfiniteScroller>
   );
 }
