@@ -1,4 +1,6 @@
 import type { LinksFunction, MetaFunction } from "@remix-run/node";
+import { Heading, links as headingLinks } from "~/components/heading";
+import { Heading2, links as heading2Links } from "~/components/heading2";
 import styles from "~/styles/index.css";
 
 export const meta: MetaFunction = () => {
@@ -8,12 +10,17 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export const links: LinksFunction = () => [{ rel: "stylesheet", href: styles }];
+export const links: LinksFunction = () => [
+  ...headingLinks(),
+  ...heading2Links(),
+  { rel: "stylesheet", href: styles },
+];
 
 export default function Index() {
   return (
     <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
-      <h1 className="hoge">Welcome to Remix</h1>
+      <Heading text="Welcome to Remix" />
+      <Heading2 text="Welcome to Remix 2" />
       <ul>
         <li>
           <a
