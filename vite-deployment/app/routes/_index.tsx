@@ -1,4 +1,8 @@
-import type { MetaFunction } from "@remix-run/node";
+import type { LoaderFunction, MetaFunction } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
+
+type Data = { id: number; thumb: string };
+type ItemsResponse = { data: Data[] };
 
 export const meta: MetaFunction = () => {
   return [
@@ -7,7 +11,18 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+export const loader: LoaderFunction = () => {
+  const items = Array.from({ length: 30 }, (_, i) => i).map((id) => ({
+    id,
+    thumb: `https://picsum.photos/200?${id}`,
+  }));
+
+  return { data: items };
+};
+
 export default function Index() {
+  const { data } = useLoaderData<ItemsResponse>();
+
   return (
     <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
       <h1>Welcome to Remix</h1>
@@ -36,6 +51,17 @@ export default function Index() {
           </a>
         </li>
       </ul>
+      {/* Items Grid */}
+      <div className="items-container">
+        {data.map((item) => (
+          <img
+            key={item.id}
+            className="item"
+            src={item.thumb}
+            alt={`${item.id}`}
+          />
+        ))}
+      </div>
     </div>
   );
 }
